@@ -32,11 +32,12 @@ public class UserController {
 
     @RequestMapping("/")
     public String HomePage(Model model, HttpSession session) {
+        model.addAttribute("user", new Users());
         Users currentUser = (Users) session.getAttribute("currentUser");
         if (currentUser != null) {
             model.addAttribute("user", currentUser);
         } else {
-            // return "redirect:client/auth/login";
+            return "client/auth/login";
         }
         return "client/home/index";
     }
@@ -135,6 +136,28 @@ public class UserController {
         newUsers.setPasswordHash(hashPassword);
         userService.registerUser(newUsers);
         return "redirect:/login";
+    }
+
+    @GetMapping("/filterTasks")
+    public String filterTasks(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String status,
+            Model model,
+            HttpSession session) {
+
+        Users currentUser = (Users) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        List<TaskCategoryPriorityDTO> filteredTasks = taskService.filterTasks(
+                currentUser.getUserId(), keyword, category, priority, sort, status);
+
+        model.addAttribute("tasks", filteredTasks);
+        return "client/home/today";
     }
 
 }

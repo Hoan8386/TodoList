@@ -18,6 +18,16 @@ public class TaskCategoryPriorityDTO {
     private int priorityID;
     private String priorityName;
 
+    private boolean Status;
+
+    public boolean isStatus() {
+        return Status;
+    }
+
+    public void setStatus(boolean Status) {
+        this.Status = Status;
+    }
+
     public int getTaskID() {
         return taskID;
     }
@@ -103,7 +113,7 @@ public class TaskCategoryPriorityDTO {
         return "TaskCategoryPriorityDTO [taskID=" + taskID + ", userID=" + userID + ", name=" + name + ", description="
                 + description + ", date=" + date + ", categoryID=" + categoryID + ", categoryName=" + categoryName
                 + ", categoryColor=" + categoryColor + ", priorityID=" + priorityID + ", priorityName=" + priorityName
-                + "]";
+                + ", Status=" + Status + "]";
     }
 
 }

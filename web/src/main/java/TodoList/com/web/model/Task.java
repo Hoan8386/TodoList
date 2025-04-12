@@ -13,6 +13,8 @@ public class Task {
     private int categoryID; // Thêm trường CategoryID
     private int priorityID; // Thêm trường PriorityID
 
+    private boolean Status;
+
     // Getters and Setters
     public int getTaskID() {
         return taskID;
@@ -74,6 +76,14 @@ public class Task {
     public String toString() {
         return "Task [taskID=" + taskID + ", userID=" + userID + ", name=" + name + ", description=" + description
                 + ", Date=" + Date + ", categoryID=" + categoryID + ", priorityID=" + priorityID + "]";
+    }
+
+    public boolean isStatus() {
+        return Status;
+    }
+
+    public void setStatus(boolean status) {
+        Status = status;
     }
 
 }

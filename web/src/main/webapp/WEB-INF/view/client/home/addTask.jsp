@@ -208,58 +208,20 @@
                     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
                 <script>
-                    function showTaskDetail(name, description, date, categoryName, categoryColor, priorityID) {
-                        document.getElementById("modalTaskName").innerText = name;
-                        document.getElementById("modalTaskDescription").innerText = description;
-                        document.getElementById("modalTaskDate").innerText = date;
+                    // Function to handle priority selection
+                    function setPriority(id, element) {
+                        // Gán giá trị vào input ẩn
+                        document.getElementById('priorityID').value = id;
 
-                        const categoryElement = document.getElementById("modalTaskCategory");
-                        categoryElement.innerText = categoryName;
-                        categoryElement.style.backgroundColor = categoryColor;
+                        // Xóa class 'selected' khỏi tất cả các tùy chọn
+                        const options = document.querySelectorAll('.priority-option');
+                        options.forEach(opt => opt.classList.remove('selected'));
 
-                        const priorityElement = document.getElementById("modalTaskPriority");
-
-                        // Reset innerHTML
-                        priorityElement.innerHTML = '';
-
-                        // Build priority display
-                        switch (priorityID) {
-                            case '1': // Low Priority
-                                priorityElement.innerHTML = `
-                                        <i class="fas fa-star text-warning me-2"></i>
-                                        <span>Low Priority</span>
-                                    `;
-                                break;
-                            case '2': // Normal Priority
-                                priorityElement.innerHTML = `
-                                        <i class="fas fa-star text-warning me-1"></i>
-                                        <i class="fas fa-star text-warning me-2"></i>
-                                        <span>Normal Priority</span>
-                                    `;
-                                break;
-                            case '3': // High Priority
-                                priorityElement.innerHTML = `
-                                        <i class="fas fa-star text-warning me-1"></i>
-                                        <i class="fas fa-star text-warning me-1"></i>
-                                        <i class="fas fa-star text-warning me-2"></i>
-                                        <span>High Priority</span>
-                                    `;
-                                break;
-                            case '4': // Urgent
-                                priorityElement.innerHTML = `
-                                        <i class="fas fa-fire text-danger me-2"></i>
-                                        <span class="text-danger fw-bold">Urgent</span>
-                                    `;
-                                break;
-                            default:
-                                priorityElement.innerText = 'No Priority';
-                        }
-
-                        const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
-                        modal.show();
+                        // Thêm class 'selected' vào cái đang chọn
+                        element.classList.add('selected');
                     }
-                </script>
 
+                </script>
             </body>
 
             </html>
