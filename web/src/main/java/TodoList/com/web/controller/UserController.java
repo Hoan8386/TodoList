@@ -3,19 +3,26 @@ package TodoList.com.web.controller;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import TodoList.com.web.model.Task;
+import TodoList.com.web.model.Category;
+import TodoList.com.web.model.Priority;
 import TodoList.com.web.model.TaskCategoryPriorityDTO;
 import TodoList.com.web.model.Users;
+import TodoList.com.web.service.CategoryService;
+import TodoList.com.web.service.PriorityService;
 import TodoList.com.web.service.TaskService;
 import TodoList.com.web.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.stream.Collectors;
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -23,22 +30,64 @@ public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final TaskService taskService;
+    private final CategoryService categoryService;
+    private final PriorityService priorityService;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder, TaskService taskService) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder, TaskService taskService,
+            CategoryService categoryService, PriorityService priorityService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.taskService = taskService;
+        this.categoryService = categoryService;
+        this.priorityService = priorityService;
     }
 
     @RequestMapping("/")
     public String HomePage(Model model, HttpSession session) {
         model.addAttribute("user", new Users());
         Users currentUser = (Users) session.getAttribute("currentUser");
-        if (currentUser != null) {
-            model.addAttribute("user", currentUser);
-        } else {
+
+        if (currentUser == null) {
             return "client/auth/login";
         }
+
+        List<TaskCategoryPriorityDTO> lsTasks = taskService
+                .getAllTaskWithCategoryPriorityByUser(currentUser.getUserId());
+
+        // Lọc theo ngày hôm nay
+        LocalDate today = LocalDate.now();
+        List<TaskCategoryPriorityDTO> todayTasks = lsTasks.stream()
+                .filter(task -> task.getDate() != null && task.getDate().toLocalDate().isEqual(today))
+                .sorted(Comparator.comparing(TaskCategoryPriorityDTO::getPriorityID).reversed()) // Sắp xếp giảm dần
+                                                                                                 // theo priority
+                .collect(Collectors.toList());
+
+        // Tính tổng số lượng
+        long totalTasks = lsTasks.size();
+        long completedTasks = lsTasks.stream().filter(t -> t.isStatus()).count(); // Status = true => completed
+        long pendingTasks = lsTasks.stream().filter(t -> !t.isStatus()).count(); // Status = false => pending
+        long urgentTasks = lsTasks.stream().filter(t -> t.getPriorityID() == 4).count(); // Urgent priority = 4
+
+        model.addAttribute("user", currentUser);
+        model.addAttribute("tasks", todayTasks);
+
+        for (TaskCategoryPriorityDTO taskCategoryPriorityDTO : todayTasks) {
+            System.out.println(taskCategoryPriorityDTO.toString());
+        }
+
+        // Tính task hôm nay đã hoàn thành và chưa hoàn thành
+        long completedToday = todayTasks.stream().filter(TaskCategoryPriorityDTO::isStatus).count();
+        long pendingToday = todayTasks.size() - completedToday;
+
+        model.addAttribute("completedToday", completedToday);
+        model.addAttribute("pendingToday", pendingToday);
+
+        // Thêm thông tin thống kê
+        model.addAttribute("totalTasks", totalTasks);
+        model.addAttribute("completedTasks", completedTasks);
+        model.addAttribute("pendingTasks", pendingTasks);
+        model.addAttribute("urgentTasks", urgentTasks);
+
         return "client/home/index";
     }
 
@@ -58,15 +107,46 @@ public class UserController {
         Users userCurrent = (Users) session.getAttribute("currentUser");
         List<TaskCategoryPriorityDTO> lsTasks = taskService
                 .getAllTaskWithCategoryPriorityByUser(userCurrent.getUserId());
-        for (TaskCategoryPriorityDTO task : lsTasks) {
-            System.out.println(task.toString());
-        }
-        model.addAttribute("tasks", lsTasks); // thêm dòng này
+
+        // Lọc theo ngày hôm nay
+        LocalDate today = LocalDate.now();
+        List<TaskCategoryPriorityDTO> todayTasks = lsTasks.stream()
+                .filter(task -> task.getDate() != null && task.getDate().toLocalDate().isEqual(today))
+                .collect(Collectors.toList());
+        // for (TaskCategoryPriorityDTO task : lsTasks) {
+        // System.out.println(task.toString());
+        // }
+
+        // Lấy danh sách category
+        List<Category> categories = categoryService.getAllCategories();
+        model.addAttribute("categories", categories);
+
+        List<Priority> priorities = priorityService.getAllPriorities();
+        model.addAttribute("priorities", priorities);
+
+        model.addAttribute("tasks", todayTasks); // thêm dòng này
         return "client/home/today";
     }
 
     @RequestMapping("/upComing")
-    public String UpComingPage(Model model) {
+    public String UpComingPage(Model model, HttpSession session) {
+        Users userCurrent = (Users) session.getAttribute("currentUser");
+        List<TaskCategoryPriorityDTO> lsTasks = taskService
+                .getAllTaskWithCategoryPriorityByUser(userCurrent.getUserId());
+
+        // Lấy danh sách category
+        List<Category> categories = categoryService.getAllCategories();
+        model.addAttribute("categories", categories);
+
+        // Lọc task có ngày lớn hơn hôm nay
+        List<TaskCategoryPriorityDTO> upcomingTasks = lsTasks.stream()
+                .filter(task -> task.getDate().toLocalDate().isAfter(LocalDate.now()))
+                .collect(Collectors.toList());
+
+        List<Priority> priorities = priorityService.getAllPriorities();
+        model.addAttribute("priorities", priorities);
+
+        model.addAttribute("tasks", upcomingTasks); // thêm dòng này
         return "client/home/upComing";
     }
 
@@ -119,7 +199,7 @@ public class UserController {
     public String Register(@Valid @ModelAttribute("newUser") Users newUsers,
             BindingResult result) {
 
-        // ✅ Kiểm tra mật khẩu xác nhận có khớp không
+        // Kiểm tra mật khẩu xác nhận có khớp không
         if (newUsers.getPasswordHash() != null && newUsers.getConfirmPassword() != null &&
                 !newUsers.getPasswordHash().equals(newUsers.getConfirmPassword())) {
             result.rejectValue("confirmPassword", "error.confirmPassword", "Xác nhận mật khẩu không khớp");
@@ -136,28 +216,6 @@ public class UserController {
         newUsers.setPasswordHash(hashPassword);
         userService.registerUser(newUsers);
         return "redirect:/login";
-    }
-
-    @GetMapping("/filterTasks")
-    public String filterTasks(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String priority,
-            @RequestParam(required = false) String sort,
-            @RequestParam(required = false) String status,
-            Model model,
-            HttpSession session) {
-
-        Users currentUser = (Users) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
-
-        List<TaskCategoryPriorityDTO> filteredTasks = taskService.filterTasks(
-                currentUser.getUserId(), keyword, category, priority, sort, status);
-
-        model.addAttribute("tasks", filteredTasks);
-        return "client/home/today";
     }
 
 }

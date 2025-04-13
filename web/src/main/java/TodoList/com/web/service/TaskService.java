@@ -4,6 +4,9 @@ import TodoList.com.web.model.Task;
 import TodoList.com.web.model.TaskCategoryPriorityDTO;
 import TodoList.com.web.repository.TaskRepository;
 
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,16 +31,6 @@ public class TaskService {
         return taskRepository.getAllTaskWithCategoryPriorityByUser(userId);
     }
 
-    public List<TaskCategoryPriorityDTO> filterTasks(
-            int userId,
-            String keyword,
-            String category,
-            String priority,
-            String sort,
-            String status) {
-        return taskRepository.filterTasks(userId, keyword, category, priority, sort, status);
-    }
-
     public boolean updateTaskStatus(Long taskId, boolean isCompleted) {
         return taskRepository.updateStatus(taskId, isCompleted);
     }
@@ -50,6 +43,15 @@ public class TaskService {
         } else {
             return taskRepository.getAllTaskWithCategoryPriorityByUser(userId); // all
         }
+    }
+
+    public List<TaskCategoryPriorityDTO> filterTasks(int userId, String keyword, String categoryId, String priorityId,
+            LocalDate date) {
+        return taskRepository.filterTasks(userId, keyword, categoryId, priorityId, date);
+    }
+
+    public void deleteTask(int taskId) {
+        taskRepository.deleteTaskById(taskId);
     }
 
 }

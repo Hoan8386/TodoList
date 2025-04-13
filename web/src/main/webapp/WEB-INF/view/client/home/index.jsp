@@ -38,7 +38,7 @@
                                     <i class="fas fa-clipboard-list"></i>
                                 </div>
                                 <div class="stat-card-body">
-                                    <h3 class="stat-number">24</h3>
+                                    <h3 class="stat-number">${totalTasks}</h3>
                                     <div class="stat-label">Total Tasks</div>
                                 </div>
                             </div>
@@ -49,7 +49,7 @@
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div class="stat-card-body">
-                                    <h3 class="stat-number">18</h3>
+                                    <h3 class="stat-number">${completedTasks}</h3>
                                     <div class="stat-label">Completed</div>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                                     <i class="fas fa-clock"></i>
                                 </div>
                                 <div class="stat-card-body">
-                                    <h3 class="stat-number">6</h3>
+                                    <h3 class="stat-number">${pendingTasks}</h3>
                                     <div class="stat-label">Pending</div>
                                 </div>
                             </div>
@@ -71,7 +71,7 @@
                                     <i class="fas fa-exclamation-triangle"></i>
                                 </div>
                                 <div class="stat-card-body">
-                                    <h3 class="stat-number">3</h3>
+                                    <h3 class="stat-number">${urgentTasks}</h3>
                                     <div class="stat-label">Urgent</div>
                                 </div>
                             </div>
@@ -80,72 +80,98 @@
 
                     <!-- Tasks List -->
                     <div class="task-list">
-                        <div class="task-header">
-                            <h5>Recent Tasks</h5>
-                            <div class="task-filters">
-                                <button class="btn active">All</button>
-                                <button class="btn">Active</button>
-                                <button class="btn">Completed</button>
-                            </div>
-                        </div>
+
 
                         <!-- Task Items -->
-                        <div class="task-items">
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <input type="checkbox" class="form-check-input">
+                        <div class="row">
+                            <!-- Bên trái: danh sách task -->
+                            <div class="col-md-6 ">
+                                <div class="task-header">
+                                    <h5>Today Tasks</h5>
+
                                 </div>
-                                <div class="task-details">
-                                    <div class="task-name">Design new dashboard layout</div>
-                                    <div class="task-due">Due Today <span class="dot"></span></div>
+                                <div class="task-items" style="height: 470px; overflow-y: scroll;">
+                                    <c:forEach var="task" items="${tasks}">
+                                        <div class="task-item"
+                                            style="border-left: 4px solid ${task.categoryColor}; padding-left: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); margin-bottom: 10px;">
+
+                                            <!-- Checkbox đánh dấu completed -->
+                                            <div class="task-checkbox">
+                                                <form:form action="/checkTask" method="post">
+                                                    <input type="hidden" name="taskId" value="${task.taskID}" />
+                                                    <input type="checkbox" class="form-check-input" name="completed"
+                                                        onchange="this.form.submit()" <c:if
+                                                        test="${task.status}">checked</c:if> />
+                                                </form:form>
+                                            </div>
+
+                                            <!-- Thông tin chi tiết task -->
+                                            <div class="task-details" style="padding-left: 10px;">
+                                                <div class="task-name">${task.name}</div>
+                                                <div class="task-priority">
+                                                    <c:choose>
+                                                        <c:when test="${task.priorityID == 1}">Low</c:when>
+                                                        <c:when test="${task.priorityID == 2}">Medium</c:when>
+                                                        <c:when test="${task.priorityID == 3}">High</c:when>
+                                                        <c:otherwise>Urgent</c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </c:forEach>
+
                                 </div>
                             </div>
 
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <input type="checkbox" class="form-check-input">
-                                </div>
-                                <div class="task-details">
-                                    <div class="task-name">Design new dashboard layout</div>
-                                    <div class="task-due">Due Today <span class="dot"></span></div>
-                                </div>
-                            </div>
+                            <!-- Bên phải: biểu đồ tròn -->
+                            <div class="col-md-6">
+                                <div class="task-header">
+                                    <h5>Process</h5>
 
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <input type="checkbox" class="form-check-input">
                                 </div>
-                                <div class="task-details">
-                                    <div class="task-name">Design new dashboard layout</div>
-                                    <div class="task-due">Due Today <span class="dot"></span></div>
-                                </div>
-                            </div>
-
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <input type="checkbox" class="form-check-input">
-                                </div>
-                                <div class="task-details">
-                                    <div class="task-name">Design new dashboard layout</div>
-                                    <div class="task-due">Due Today <span class="dot"></span></div>
-                                </div>
-                            </div>
-
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <input type="checkbox" class="form-check-input">
-                                </div>
-                                <div class="task-details">
-                                    <div class="task-name">Design new dashboard layout</div>
-                                    <div class="task-due">Due Today <span class="dot"></span></div>
+                                <div style="max-width: 400px; margin: auto;">
+                                    <canvas id="taskChart"></canvas>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
                 <!-- Bootstrap Bundle with Popper -->
-                <script
-                    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js">
+                    src = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" ></script>
+                <script>
+                const completed = ${ completedToday };
+                    const pending = ${ pendingToday };
+
+                    const ctx = document.getElementById('taskChart').getContext('2d');
+                    const taskChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Completed', 'Pending'],
+                            datasets: [{
+                                data: [completed, pending],
+                                backgroundColor: ['#F1600D', '#ffc107'],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Task Completion Today'
+                                }
+                            }
+                        }
+                    });
+                </script>
+
+
             </body>
 
             </html>

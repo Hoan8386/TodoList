@@ -5,6 +5,7 @@ import TodoList.com.web.model.TaskCategoryPriorityDTO;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,6 @@ public class TaskRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // Phương thức lưu Task vào cơ sở dữ liệu
     // Phương thức lưu Task vào cơ sở dữ liệu
     public void save(Task task) {
         String sql = "INSERT INTO Task (UserID, Name, Description, CategoryID, PriorityID, Date) " +
@@ -69,61 +69,59 @@ public class TaskRepository {
         }, userId);
     }
 
-    public List<TaskCategoryPriorityDTO> filterTasks(
-            int userId,
-            String keyword,
-            String category,
-            String priority,
-            String sort,
-            String status) {
-        StringBuilder sql = new StringBuilder("SELECT t.TaskID, t.UserID, t.Name, t.Description, t.Date, t.Status, " +
-                "c.CategoryID, c.Name AS CategoryName, c.Color, " +
-                "p.PriorityID, p.Name AS PriorityName " +
-                "FROM Task t " +
-                "LEFT JOIN Category c ON t.CategoryID = c.CategoryID " +
-                "LEFT JOIN Priority p ON t.PriorityID = p.PriorityID " +
-                "WHERE t.UserID = ?");
+    public List<TaskCategoryPriorityDTO> filterTasks(int userId, String keyword, String categoryId, String priorityId,
+            LocalDate date) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT t.TaskID, t.UserID, t.Name, t.Description, t.Date, t.Status, " +
+                        "c.CategoryID, c.Name AS CategoryName, c.Color, " +
+                        "p.PriorityID, p.Name AS PriorityName " +
+                        "FROM Task t " +
+                        "LEFT JOIN Category c ON t.CategoryID = c.CategoryID " +
+                        "LEFT JOIN Priority p ON t.PriorityID = p.PriorityID " +
+                        "WHERE t.UserID = ?");
+
         List<Object> params = new ArrayList<>();
         params.add(userId);
 
-        if (keyword != null && !keyword.isEmpty()) {
-            sql.append(" AND LOWER(t.Name) LIKE ?");
-            params.add("%" + keyword.toLowerCase() + "%");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (t.Name LIKE ? OR t.Description LIKE ?)");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
         }
 
-        if (category != null && !category.isEmpty()) {
-            sql.append(" AND LOWER(c.Name) = ?");
-            params.add(category.toLowerCase());
-        }
-
-        if (priority != null && !priority.isEmpty()) {
-            sql.append(" AND LOWER(p.Name) = ?");
-            params.add(priority.toLowerCase());
-        }
-
-        if (status != null && !status.isEmpty()) {
-            if (status.equalsIgnoreCase("completed")) {
-                sql.append(" AND t.Status = true");
-            } else if (status.equalsIgnoreCase("pending")) {
-                sql.append(" AND t.Status = false");
+        if (categoryId != null && !categoryId.equals("0") && !categoryId.isEmpty()) {
+            try {
+                int catId = Integer.parseInt(categoryId);
+                sql.append(" AND t.CategoryID = ?");
+                params.add(catId);
+            } catch (NumberFormatException e) {
+                // Bỏ qua nếu không hợp lệ
             }
         }
 
-        if (sort != null && sort.equalsIgnoreCase("priority")) {
-            sql.append(" ORDER BY CASE LOWER(p.Name) " +
-                    "WHEN 'high' THEN 1 " +
-                    "WHEN 'medium' THEN 2 " +
-                    "WHEN 'low' THEN 3 " +
-                    "ELSE 4 END");
+        if (priorityId != null && !priorityId.equals("0") && !priorityId.isEmpty()) {
+            try {
+                int priId = Integer.parseInt(priorityId);
+                sql.append(" AND t.PriorityID = ?");
+                params.add(priId);
+            } catch (NumberFormatException e) {
+                // Bỏ qua nếu không hợp lệ
+            }
+        }
+
+        if (date != null) {
+            sql.append(" AND t.Date = ?");
+            params.add(java.sql.Date.valueOf(date)); // chuyển LocalDate thành java.sql.Date
         }
 
         return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
             TaskCategoryPriorityDTO dto = new TaskCategoryPriorityDTO();
+
             dto.setTaskID(rs.getInt("TaskID"));
             dto.setUserID(rs.getInt("UserID"));
             dto.setName(rs.getString("Name"));
             dto.setDescription(rs.getString("Description"));
-            dto.setDate(rs.getDate("Date"));
+            dto.setDate(rs.getDate("Date")); // java.sql.Date
             dto.setStatus(rs.getBoolean("Status"));
 
             dto.setCategoryID(rs.getInt("CategoryID"));
@@ -135,7 +133,6 @@ public class TaskRepository {
 
             return dto;
         }, params.toArray());
-
     }
 
     public boolean updateStatus(Long taskId, boolean isCompleted) {
@@ -174,4 +171,8 @@ public class TaskRepository {
         }, userId, status);
     }
 
+    public void deleteTaskById(int taskId) {
+        String sql = "DELETE FROM task WHERE taskID = ?";
+        jdbcTemplate.update(sql, taskId);
+    }
 }

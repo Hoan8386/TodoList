@@ -1,6 +1,8 @@
 package TodoList.com.web.model;
 
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Task {
@@ -9,7 +11,7 @@ public class Task {
     private String name;
     private String description;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date Date;
+    private LocalDate Date;
     private int categoryID; // Thêm trường CategoryID
     private int priorityID; // Thêm trường PriorityID
 
@@ -48,11 +50,11 @@ public class Task {
         this.description = description;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return Date;
     }
 
-    public void setDate(Date Date) {
+    public void setDate(LocalDate Date) {
         this.Date = Date;
     }
 
