@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import TodoList.com.web.model.Category;
 import TodoList.com.web.model.Priority;
+import TodoList.com.web.model.Task;
 import TodoList.com.web.model.TaskCategoryPriorityDTO;
 import TodoList.com.web.model.Users;
 import TodoList.com.web.service.CategoryService;
@@ -21,9 +22,15 @@ import jakarta.validation.Valid;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class UserController {
@@ -98,7 +105,68 @@ public class UserController {
     }
 
     @RequestMapping("/analyst")
-    public String AnalystPage(Model model) {
+    public String AnalystPage(Model model, HttpSession session) {
+        Users currentUser = (Users) session.getAttribute("currentUser");
+
+        // Lấy danh sách Task DTO có kèm thông tin Category và Priority
+        List<TaskCategoryPriorityDTO> lsTasks = taskService
+                .getAllTaskWithCategoryPriorityByUser(currentUser.getUserId());
+
+        // 1. Thống kê theo thứ trong tuần (1 = Mon, 7 = Sun)
+        List<Integer> tasksByWeek = new ArrayList<>(Collections.nCopies(7, 0));
+        for (TaskCategoryPriorityDTO task : lsTasks) {
+            if (task.getDate() != null) {
+                LocalDate localDate = task.getDate().toLocalDate();
+                int dayOfWeek = localDate.getDayOfWeek().getValue(); // 1 = Monday, ..., 7 = Sunday
+                tasksByWeek.set(dayOfWeek - 1, tasksByWeek.get(dayOfWeek - 1) + 1);
+            }
+        }
+
+        // 2. Tính tỷ lệ hoàn thành
+        int completedTasks = (int) lsTasks.stream().filter(TaskCategoryPriorityDTO::isStatus).count();
+        int pendingTasks = lsTasks.size() - completedTasks;
+
+        // 3. Thống kê theo tháng
+        List<Integer> tasksByMonth = new ArrayList<>(Collections.nCopies(12, 0));
+        for (TaskCategoryPriorityDTO task : lsTasks) {
+            if (task.getDate() != null) {
+                LocalDate localDate = task.getDate().toLocalDate();
+                int month = localDate.getMonthValue(); // 1 = Jan ... 12 = Dec
+                tasksByMonth.set(month - 1, tasksByMonth.get(month - 1) + 1);
+            }
+        }
+
+        // 4. Thống kê 7 ngày gần nhất (không tính hôm nay)
+        Map<String, Integer> tasksLast7Days = new LinkedHashMap<>();
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE dd/MM"); // ví dụ: Mon 08/04
+
+        for (int i = 7; i >= 1; i--) {
+            LocalDate targetDate = today.minusDays(i);
+            String label = targetDate.format(formatter);
+            tasksLast7Days.put(label, 0);
+        }
+
+        for (TaskCategoryPriorityDTO task : lsTasks) {
+            if (task.getDate() != null) {
+                LocalDate taskDate = task.getDate().toLocalDate();
+                String label = taskDate.format(formatter);
+                if (tasksLast7Days.containsKey(label)) {
+                    tasksLast7Days.put(label, tasksLast7Days.get(label) + 1);
+                }
+            }
+        }
+
+        // Đẩy dữ liệu sang JSP
+        model.addAttribute("tasksByWeek", tasksByWeek);
+        model.addAttribute("completedTasks", completedTasks);
+        model.addAttribute("pendingTasks", pendingTasks);
+        model.addAttribute("tasksByMonth", tasksByMonth);
+
+        // Dữ liệu cho biểu đồ 7 ngày gần nhất (không gồm hôm nay)
+        model.addAttribute("tasksLast7DaysLabels", new ArrayList<>(tasksLast7Days.keySet()));
+        model.addAttribute("tasksLast7DaysValues", new ArrayList<>(tasksLast7Days.values()));
+
         return "client/home/analyst";
     }
 
