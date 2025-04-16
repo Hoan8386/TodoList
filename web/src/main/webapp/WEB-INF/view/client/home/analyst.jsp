@@ -88,13 +88,13 @@
             const weeklyChart = new Chart(document.getElementById('weeklyChart'), {
                 type: 'bar',
                 data: {
-                    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                    labels: ["7", "6", "5", "4", "3", "2", "1"],
                     datasets: [{
                         label: 'Tasks',
-                        data: [3, 5, 2, 6, 4, 1, 2],
+                        data: ${ tasksLast7DaysValues },
                         backgroundColor: '#4e73df'
                     }]
-                }
+            }
             });
 
             const completionChart = new Chart(document.getElementById('completionChart'), {
@@ -102,7 +102,7 @@
                 data: {
                     labels: ['Completed', 'Pending'],
                     datasets: [{
-                        data: [12, 8],
+                        data: [<%= request.getAttribute("completedTasks") %>, <%= request.getAttribute("pendingTasks") %>],
                         backgroundColor: ['#28a745', '#ffc107']
                     }]
                 }

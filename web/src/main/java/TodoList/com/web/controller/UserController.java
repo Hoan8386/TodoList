@@ -112,19 +112,11 @@ public class UserController {
         List<TaskCategoryPriorityDTO> lsTasks = taskService
                 .getAllTaskWithCategoryPriorityByUser(currentUser.getUserId());
 
-        // 1. Thống kê theo thứ trong tuần (1 = Mon, 7 = Sun)
-        List<Integer> tasksByWeek = new ArrayList<>(Collections.nCopies(7, 0));
-        for (TaskCategoryPriorityDTO task : lsTasks) {
-            if (task.getDate() != null) {
-                LocalDate localDate = task.getDate().toLocalDate();
-                int dayOfWeek = localDate.getDayOfWeek().getValue(); // 1 = Monday, ..., 7 = Sunday
-                tasksByWeek.set(dayOfWeek - 1, tasksByWeek.get(dayOfWeek - 1) + 1);
-            }
-        }
-
         // 2. Tính tỷ lệ hoàn thành
         int completedTasks = (int) lsTasks.stream().filter(TaskCategoryPriorityDTO::isStatus).count();
         int pendingTasks = lsTasks.size() - completedTasks;
+        System.out.println(completedTasks);
+        System.out.println(pendingTasks);
 
         // 3. Thống kê theo tháng
         List<Integer> tasksByMonth = new ArrayList<>(Collections.nCopies(12, 0));
@@ -158,7 +150,6 @@ public class UserController {
         }
 
         // Đẩy dữ liệu sang JSP
-        model.addAttribute("tasksByWeek", tasksByWeek);
         model.addAttribute("completedTasks", completedTasks);
         model.addAttribute("pendingTasks", pendingTasks);
         model.addAttribute("tasksByMonth", tasksByMonth);
