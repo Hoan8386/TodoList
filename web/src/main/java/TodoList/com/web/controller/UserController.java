@@ -107,7 +107,7 @@ public class UserController {
     @RequestMapping("/analyst")
     public String AnalystPage(Model model, HttpSession session) {
         Users currentUser = (Users) session.getAttribute("currentUser");
-
+        model.addAttribute("user", new Users());
         // Lấy danh sách Task DTO có kèm thông tin Category và Priority
         List<TaskCategoryPriorityDTO> lsTasks = taskService
                 .getAllTaskWithCategoryPriorityByUser(currentUser.getUserId());
@@ -164,6 +164,7 @@ public class UserController {
     @RequestMapping("/today")
     public String TodayPage(Model model, HttpSession session) {
         Users userCurrent = (Users) session.getAttribute("currentUser");
+        model.addAttribute("user", new Users());
         List<TaskCategoryPriorityDTO> lsTasks = taskService
                 .getAllTaskWithCategoryPriorityByUser(userCurrent.getUserId());
 
@@ -183,6 +184,8 @@ public class UserController {
         List<Priority> priorities = priorityService.getAllPriorities();
         model.addAttribute("priorities", priorities);
 
+        model.addAttribute("categories", categoryService.getAllCategories());
+
         model.addAttribute("tasks", todayTasks); // thêm dòng này
         return "client/home/today";
     }
@@ -190,6 +193,7 @@ public class UserController {
     @RequestMapping("/upComing")
     public String UpComingPage(Model model, HttpSession session) {
         Users userCurrent = (Users) session.getAttribute("currentUser");
+        model.addAttribute("user", new Users());
         List<TaskCategoryPriorityDTO> lsTasks = taskService
                 .getAllTaskWithCategoryPriorityByUser(userCurrent.getUserId());
 
@@ -212,6 +216,7 @@ public class UserController {
     @RequestMapping("/info")
     public String infoPage(Model model, HttpSession session) {
         Users currentUser = (Users) session.getAttribute("currentUser");
+        model.addAttribute("user", new Users());
         if (currentUser != null) {
             model.addAttribute("user", currentUser);
         }
@@ -275,6 +280,23 @@ public class UserController {
         newUsers.setPasswordHash(hashPassword);
         userService.registerUser(newUsers);
         return "redirect:/login";
+    }
+
+    @PostMapping("/updateUser")
+    public String updateUser(@ModelAttribute Users user, HttpSession session) {
+        Users currentUser = (Users) session.getAttribute("currentUser");
+
+        // Cập nhật dữ liệu
+        this.userService.updateUser(user);
+
+        // Lấy lại thông tin mới nhất từ DB
+        Users updatedUser = this.userService.getUserByEmail(currentUser.getEmail());
+
+        // Cập nhật lại session
+        session.setAttribute("currentUser", updatedUser);
+
+        // Redirect để reload dữ liệu
+        return "redirect:/info";
     }
 
 }

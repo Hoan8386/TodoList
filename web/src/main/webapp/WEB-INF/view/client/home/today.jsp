@@ -144,7 +144,8 @@
                                 style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
                                 <!-- Icon xem chi tiết -->
                                 <a href="javascript:void(0);" class="task-view-details"
-                                    onclick="showTaskDetail('${task.name}', '${task.description}', '${task.date}', '${task.categoryName}', '${task.categoryColor}', '${task.priorityID}')">
+                                    onclick="showTaskDetail('${task.taskID}','${task.name}', '${task.description}', '${task.date}', '${task.categoryID}', '${task.categoryColor}', '${task.priorityID}')">
+
                                     <i class="fas fa-eye" style="color: #F1600D;"></i>
                                 </a>
 
@@ -187,30 +188,58 @@
                                     </div>
                                     <!-- Modal Body -->
                                     <div class="modal-body px-4">
+                                        <div class="mb-3" hidden>
+                                            <input type="text" id="modalTaskID"
+                                                class="form-control fw-semibold text-dark" disabled>
+                                        </div>
                                         <div class="mb-3">
                                             <strong class="text-muted">Name:</strong>
-                                            <div id="modalTaskName" class="fw-semibold text-dark"></div>
+                                            <input type="text" id="modalTaskName"
+                                                class="form-control fw-semibold text-dark" disabled>
                                         </div>
                                         <div class="mb-3">
                                             <strong class="text-muted">Description:</strong>
-                                            <div id="modalTaskDescription" class="text-muted fst-italic"></div>
+                                            <textarea id="modalTaskDescription"
+                                                class="form-control text-muted fst-italic" disabled></textarea>
                                         </div>
                                         <div class="mb-3">
                                             <strong class="text-muted">Date:</strong>
-                                            <div id="modalTaskDate" class="text-dark"></div>
+                                            <input type="date" id="modalTaskDate" class="form-control text-dark"
+                                                disabled>
                                         </div>
                                         <div class="mb-3">
                                             <strong class="text-muted">Category:</strong>
-                                            <div id="modalTaskCategory" class="badge px-3 py-2" style="color: #fff;">
-                                            </div>
+                                            <select id="modalTaskCategory" class="form-select">
+                                                <c:forEach var="category" items="${categories}">
+                                                    <option value="${category.categoryID}" style="color: black;">
+                                                        ${category.name}
+                                                    </option>
+                                                </c:forEach>
+                                            </select>
+
+
                                         </div>
                                         <div class="mb-3">
                                             <strong class="text-muted">Priority:</strong>
-                                            <div id="modalTaskPriority" class="d-flex align-items-center gap-2"></div>
+                                            <select id="modalTaskPriority" class="form-select">
+                                                <option value="1">Low Priority</option>
+                                                <option value="2">Normal Priority</option>
+                                                <option value="3">High Priority</option>
+                                                <option value="4">Urgent</option>
+                                            </select>
                                         </div>
                                     </div>
+
                                     <!-- Modal Footer -->
                                     <div class="modal-footer bg-light rounded-bottom-4">
+                                        <button type="button" class="btn btn-warning" id="editBtn"
+                                            onclick="enableEditing()">
+                                            <i class="fas fa-edit me-1"></i>Edit
+                                        </button>
+
+
+
+
                                         <button type="button" class="btn"
                                             style="border: 1px solid #F1600D; color: #F1600D;" data-bs-dismiss="modal">
                                             <i class="fas fa-times-circle me-1"></i>Close
@@ -219,8 +248,6 @@
                                 </div>
                             </div>
                         </div>
-
-
 
                         <!-- Delete Confirmation Modal -->
                         <div class="modal fade" id="deleteConfirmModal" tabindex="-1"
@@ -252,47 +279,19 @@
                             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
                         <script>
-                            function showTaskDetail(name, description, date, categoryName, categoryColor, priorityID) {
-                                document.getElementById("modalTaskName").innerText = name;
-                                document.getElementById("modalTaskDescription").innerText = description;
-                                document.getElementById("modalTaskDate").innerText = date;
+                            function showTaskDetail(taskID, name, description, date, categoryID, categoryColor, priorityID) {
+                                document.getElementById("modalTaskName").value = name;
+                                document.getElementById("modalTaskDescription").value = description;
+                                document.getElementById("modalTaskDate").value = date;
+                                document.getElementById("modalTaskID").value = taskID;
+
+
                                 const categoryElement = document.getElementById("modalTaskCategory");
-                                categoryElement.innerText = categoryName;
-                                categoryElement.style.backgroundColor = categoryColor;
-                                const priorityElement = document.getElementById("modalTaskPriority");
-                                priorityElement.innerHTML = ''; // Reset
-                                // Build priority display with text first
-                                switch (priorityID) {
-                                    case '1': // Low Priority
-                                        priorityElement.innerHTML = `
-                        <span>Low Priority</span>
-                        <i class="fas fa-star text-warning ms-2"></i>
-                    `;
-                                        break;
-                                    case '2': // Normal Priority
-                                        priorityElement.innerHTML = `
-                        <span>Normal Priority</span>
-                        <i class="fas fa-star text-warning ms-1"></i>
-                        <i class="fas fa-star text-warning ms-2"></i>
-                    `;
-                                        break;
-                                    case '3': // High Priority
-                                        priorityElement.innerHTML = `
-                        <span>High Priority</span>
-                        <i class="fas fa-star text-warning ms-1"></i>
-                        <i class="fas fa-star text-warning ms-1"></i>
-                        <i class="fas fa-star text-warning ms-2"></i>
-                    `;
-                                        break;
-                                    case '4': // Urgent
-                                        priorityElement.innerHTML = `
-                        <span class="text-danger fw-bold">Urgent</span>
-                        <i class="fas fa-fire text-danger ms-2"></i>
-                    `;
-                                        break;
-                                    default:
-                                        priorityElement.innerText = 'No Priority';
-                                }
+                                categoryElement.value = categoryID; // chọn đúng option
+                                categoryElement.style.color = 'black';
+
+                                document.getElementById("modalTaskPriority").value = priorityID;
+
                                 const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
                                 modal.show();
                             }
@@ -303,6 +302,55 @@
                                 var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
                                 deleteModal.show();
                             }
+
+                            function enableEditing() {
+                                // Bật tất cả input/select
+                                document.getElementById("modalTaskName").disabled = false;
+                                document.getElementById("modalTaskDescription").disabled = false;
+                                document.getElementById("modalTaskDate").disabled = false;
+                                document.getElementById("modalTaskCategory").disabled = false;
+                                document.getElementById("modalTaskPriority").disabled = false;
+
+                                // Chuyển nút Edit thành Update
+                                const editBtn = document.getElementById("editBtn");
+                                editBtn.innerHTML = '<i class="fas fa-check me-1"></i>Update';
+                                editBtn.classList.remove('btn-warning');
+                                editBtn.classList.add('btn-success');
+                                editBtn.setAttribute('onclick', 'submitUpdate()');
+                            }
+
+                            function submitUpdate() {
+                                const updatedTask = {
+                                    taskID: document.getElementById("modalTaskID").value,
+                                    name: document.getElementById("modalTaskName").value,
+                                    description: document.getElementById("modalTaskDescription").value,
+                                    date: document.getElementById("modalTaskDate").value,
+                                    categoryID: document.getElementById("modalTaskCategory").value,
+                                    priorityID: document.getElementById("modalTaskPriority").value
+                                };
+
+                                console.log("Updated Task: ", updatedTask);
+                                fetch('/updateTask', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(updatedTask)
+                                })
+                                    .then(response => {
+                                        if (response.ok) {
+                                            alert('Cập nhật thành công!');
+                                            location.reload(); // Refresh lại trang để thấy task mới
+                                        } else {
+                                            alert('Cập nhật thất bại.');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Lỗi khi cập nhật:', error);
+                                    });
+                            }
+
+
                         </script>
                     </body>
 

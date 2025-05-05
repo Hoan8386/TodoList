@@ -2,6 +2,7 @@ package TodoList.com.web.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,20 @@ public class CategoryService {
 
     private JdbcTemplate jdbcTemplate;
 
-    // Constructor injection
+    // Constructor không tham số cho việc khởi tạo từ Servlet
+    public CategoryService() {
+        // Vì đây là khởi tạo từ Servlet, ta cần lấy JdbcTemplate từ nguồn khác
+        // Có thể lấy từ DatabaseConfig hoặc sử dụng một bean factory riêng
+        try {
+            this.jdbcTemplate = new JdbcTemplate(TodoList.com.web.config.DatabaseConfig.getDataSource());
+        } catch (Exception e) {
+            System.err.println("Error initializing JdbcTemplate in CategoryService: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Constructor injection for Spring beans
+    @Autowired
     public CategoryService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }

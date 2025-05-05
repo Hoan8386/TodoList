@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import TodoList.com.web.model.Task;
 import TodoList.com.web.model.Users;
 
 import java.util.List;
@@ -82,6 +83,21 @@ public class UserRepository {
             e.printStackTrace(); // Log lỗi để kiểm tra
             return null;
         }
+    }
+
+    public boolean updateUser(Users user) {
+        String sql = "UPDATE User SET Username = ?, Email = ?, Avatar = ?, PhoneNumber = ?, BirthDate = ? " +
+                "WHERE UserID = ?";
+
+        int rowsAffected = jdbcTemplate.update(sql,
+                user.getUserName(),
+                user.getEmail(),
+                user.getAvatar(),
+                user.getPhoneNumber(),
+                user.getBirthDate(), // LocalDate được JdbcTemplate tự xử lý
+                user.getUserId());
+
+        return rowsAffected > 0;
     }
 
 }

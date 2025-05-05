@@ -61,18 +61,22 @@
                 <!-- Main Content -->
                 <div class="container user-info-container">
                     <div class="text-center">
-                        <img src="${user != null && user.avatar != null ? user.avatar : 'https://via.placeholder.com/150'}"
-                            alt="User Avatar" class="user-avatar">
-                        <h2 class="mb-4">User Profile</h2>
+                        <img id="avatarPreview" style="margin: auto; display: none;"
+                            src="${user != null && user.avatar != null ? user.avatar : 'https://via.placeholder.com/150'}"
+                            alt="" class="user-avatar">
+                        <h2 class="mb-4 mt-3">User Profile</h2>
                     </div>
 
                     <!-- Form chứa các input -->
-                    <form id="userProfileForm" action="updateUser" method="POST">
-                        <div class="info-section">
+                    <form id="userProfileForm" action="/updateUser" method="POST" enctype="multipart/form-data">
+                        <div class="info-section  text-center">
+
+
+                            <input type="text" name="userId" value="${user.userId}" hidden disabled>
                             <div class="info-item">
                                 <span class="info-label">User Name:</span>
                                 <input type="text" name="userName" class="form-control d-inline-block"
-                                    value="${user.userName}">
+                                    value="${user.userName}" disabled>
                                 <c:if test="${user != null && empty user.userName}">
                                     <small class="text-danger error-message">Please update your username!</small>
                                 </c:if>
@@ -80,7 +84,7 @@
                             <div class="info-item">
                                 <span class="info-label">Email:</span>
                                 <input type="email" name="email" class="form-control d-inline-block"
-                                    value="${user != null && user.email != null ? user.email : ''}" readonly>
+                                    value="${user != null && user.email != null ? user.email : ''}" disabled>
                                 <c:if test="${user != null && empty user.email}">
                                     <small class="text-danger error-message d-block">Please update your email!</small>
                                 </c:if>
@@ -89,7 +93,7 @@
                                 <span class="info-label">Phone:</span>
                                 <input type="text" name="phoneNumber" class="form-control d-inline-block"
                                     value="${user != null && user.phoneNumber != null ? user.phoneNumber : ''}"
-                                    readonly>
+                                    disabled>
                                 <c:if test="${user != null && empty user.phoneNumber}">
                                     <small class="text-danger error-message d-block">Please update your phone
                                         number!</small>
@@ -97,17 +101,19 @@
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Birth Date:</span>
-                                <input type="text" name="birthDate" class="form-control d-inline-block"
-                                    value="${user != null && user.birthDate != null ? user.birthDate : ''}" readonly>
+                                <input type="date" name="birthDate" class="form-control d-inline-block"
+                                    value="${user != null && user.birthDate != null ? user.birthDate : ''}" disabled>
                                 <c:if test="${user != null && empty user.birthDate}">
                                     <small class="text-danger error-message d-block">Please update your birth
                                         date!</small>
                                 </c:if>
                             </div>
-                            <div class="info-item">
+                            <div class="info-item" style="display: none;">
                                 <span class="info-label">Avatar:</span>
-                                <input type="text" name="avatar" class="form-control d-inline-block"
-                                    value="${user != null && user.avatar != null ? user.avatar : ''}" readonly>
+                                <input type="file" name="avatarFile" id="avatarFile" class="form-control d-inline-block"
+                                    disabled accept="image/*">
+                                <input type="hidden" name="avatar"
+                                    value="${user != null && user.avatar != null ? user.avatar : ''}">
                                 <c:if test="${user != null && empty user.avatar}">
                                     <small class="text-danger error-message d-block">Please update your avatar!</small>
                                 </c:if>
@@ -120,7 +126,7 @@
                                 <i class="fas fa-edit"></i> Edit Profile
                             </button>
                             <button type="submit" id="saveButton" class="btn btn-success me-2" style="display: none;">
-                                <i class="fas fa-save"></i> Save
+                                <i class="fas fa-save"></i> Update
                             </button>
                             <a href="dashboard.jsp" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left"></i> Back
@@ -147,15 +153,26 @@
                         const saveButton = document.getElementById('saveButton');
 
                         // Kiểm tra trạng thái hiện tại của input
-                        const isReadOnly = inputs[0].hasAttribute('readonly');
+                        const isReadOnly = inputs[0].hasAttribute('disabled');
 
                         if (isReadOnly) {
                             // Chuyển sang chế độ chỉnh sửa
-                            inputs.forEach(input => input.removeAttribute('readonly'));
+                            inputs.forEach(input => input.removeAttribute('disabled'));
                             editButton.style.display = 'none';
                             saveButton.style.display = 'inline-block';
                         }
                     }
+
+                    document.getElementById('avatarFile').addEventListener('change', function (event) {
+                        const file = event.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                document.getElementById('avatarPreview').src = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
                 </script>
 
                 <!-- Bootstrap Bundle with Popper -->

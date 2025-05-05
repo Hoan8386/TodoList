@@ -175,4 +175,38 @@ public class TaskRepository {
         String sql = "DELETE FROM task WHERE taskID = ?";
         jdbcTemplate.update(sql, taskId);
     }
+
+    public Task getTaskById(int taskId) {
+        String sql = "SELECT * FROM Task WHERE TaskID = ?";
+
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+            Task task = new Task();
+            task.setTaskID(rs.getInt("TaskID"));
+            task.setUserID(rs.getInt("UserID"));
+            task.setName(rs.getString("Name"));
+            task.setDescription(rs.getString("Description"));
+            task.setCategoryID(rs.getInt("CategoryID"));
+            task.setPriorityID(rs.getInt("PriorityID"));
+            task.setDate(rs.getDate("Date").toLocalDate()); // Convert java.sql.Date to LocalDate
+            task.setStatus(rs.getBoolean("Status"));
+
+            return task;
+        }, taskId);
+    }
+
+    public boolean updateTask(Task task) {
+        String sql = "UPDATE Task SET Name = ?, Description = ?, CategoryID = ?, PriorityID = ?, Date = ? " +
+                "WHERE TaskID = ?";
+
+        int rowsAffected = jdbcTemplate.update(sql,
+                task.getName(),
+                task.getDescription(),
+                task.getCategoryID(),
+                task.getPriorityID(),
+                task.getDate(),
+                task.getTaskID());
+
+        return rowsAffected > 0;
+    }
+
 }

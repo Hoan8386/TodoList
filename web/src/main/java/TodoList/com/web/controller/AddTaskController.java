@@ -1,11 +1,16 @@
 package TodoList.com.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import jakarta.servlet.http.HttpSession;
 import TodoList.com.web.model.Task;
 import TodoList.com.web.model.Users;
@@ -50,6 +55,23 @@ public class AddTaskController {
         // Đưa thông tin task mới vào view, có thể hiển thị thông báo thành công
         model.addAttribute("message", "Task added successfully!");
         return "redirect:/today"; // Chuyển hướng đến trang danh sách task sau khi thêm thành công
+    }
+
+    @PostMapping("/updateTask")
+    public boolean updateTask(@RequestBody Task task, HttpSession session) {
+        Users currentUser = (Users) session.getAttribute("currentUser");
+        Task existingTask = taskService.getTaskById(task.getTaskID());
+
+        if (existingTask != null && existingTask.getUserID() == currentUser.getUserId()) {
+            existingTask.setName(task.getName());
+            existingTask.setDescription(task.getDescription());
+            existingTask.setDate(task.getDate());
+            existingTask.setCategoryID(task.getCategoryID());
+            existingTask.setPriorityID(task.getPriorityID());
+            return taskService.updateTask(existingTask);
+        }
+
+        return false;
     }
 
 }

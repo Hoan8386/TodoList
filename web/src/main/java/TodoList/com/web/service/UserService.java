@@ -42,4 +42,7 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public boolean updateUser(Users user) {
+        return userRepository.updateUser(user);
+    }
 }

@@ -2,6 +2,13 @@
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         <%@taglib uri="http://www.springframework.org/tags/form" prefix="form" %>
             <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr"></script>
+            <!-- Bootstrap CSS -->
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+                rel="stylesheet">
+            <link rel="stylesheet" href="/css/client/style.css">
+            <!-- Font Awesome for icons -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 
             <!-- Sidebar -->
             <!-- Sidebar -->
@@ -59,21 +66,19 @@
                 aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <form method="post" action="/addCategory" id="categoryForm">
-                            <!-- Thêm form gửi tới /addCategory -->
+                        <form method="post" action="/category" id="categoryForm">
+                            <input type="hidden" name="action" value="add" />
                             <div class="modal-header">
                                 <h1 class="modal-title fs-5" id="exampleModalLabel">Add new category</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <!-- Input nhập loại danh mục -->
                                 <div class="mb-3">
                                     <label for="categoryName" class="form-label">Name category</label>
                                     <input type="text" class="form-control" id="categoryName" name="name"
                                         placeholder="Nhập tên danh mục..." required>
                                 </div>
-                                <!-- Input chọn màu -->
                                 <div class="mb-3">
                                     <label for="categoryColor" class="form-label">Pick color</label>
                                     <input type="color" class="form-control form-control-color" id="categoryColor"
@@ -83,9 +88,9 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 <button type="submit" class="btn btn-primary">Save category</button>
-                                <!-- Thay type="button" bằng type="submit" -->
                             </div>
                         </form>
+
                     </div>
                 </div>
             </div>
@@ -187,4 +192,6 @@
                     });
                 });
 
+
             </script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

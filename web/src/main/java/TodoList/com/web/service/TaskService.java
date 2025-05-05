@@ -54,4 +54,11 @@ public class TaskService {
         taskRepository.deleteTaskById(taskId);
     }
 
+    public Task getTaskById(int id) {
+        return taskRepository.getTaskById(id);
+    }
+
+    public boolean updateTask(Task task) {
+        return taskRepository.updateTask(task);
+    }
 }
