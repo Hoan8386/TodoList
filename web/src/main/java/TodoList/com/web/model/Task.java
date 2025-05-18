@@ -54,8 +54,8 @@ public class Task {
         return Date;
     }
 
-    public void setDate(LocalDate Date) {
-        this.Date = Date;
+    public void setDate(java.sql.Date date2) {
+        this.Date = date2.toLocalDate();
     }
 
     public int getCategoryID() {

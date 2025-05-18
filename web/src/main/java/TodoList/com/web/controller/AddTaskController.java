@@ -46,7 +46,7 @@ public class AddTaskController {
         newTask.setUserID(currentUser.getUserId());
         newTask.setName(task.getName()); // Gán tiêu đề
         newTask.setDescription(task.getDescription()); // Gán mô tả
-        newTask.setDate(task.getDate()); // Gán ngày hết hạn
+        newTask.setDate(java.sql.Date.valueOf(task.getDate())); // Gán ngày hết hạn
         newTask.setCategoryID(task.getCategoryID()); // Gán ID danh mục
         newTask.setPriorityID(task.getPriorityID()); // Gán ID mức độ ưu tiên
 
@@ -65,7 +65,7 @@ public class AddTaskController {
         if (existingTask != null && existingTask.getUserID() == currentUser.getUserId()) {
             existingTask.setName(task.getName());
             existingTask.setDescription(task.getDescription());
-            existingTask.setDate(task.getDate());
+            existingTask.setDate(java.sql.Date.valueOf(task.getDate()));
             existingTask.setCategoryID(task.getCategoryID());
             existingTask.setPriorityID(task.getPriorityID());
             return taskService.updateTask(existingTask);

@@ -23,7 +23,7 @@ public class CategoryServlet extends HttpServlet {
         if (this.categoryService == null) {
             System.out.println("WARNING: CategoryService is null, attempting to get from ServletContext");
             this.categoryService = (CategoryService) getServletContext().getAttribute("categoryService");
-            
+
             // Nếu vẫn không có, tạo mới (không khuyến khích trong production)
             if (this.categoryService == null) {
                 System.out.println("ERROR: CategoryService could not be found or created");

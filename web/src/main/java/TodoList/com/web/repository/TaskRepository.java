@@ -187,7 +187,7 @@ public class TaskRepository {
             task.setDescription(rs.getString("Description"));
             task.setCategoryID(rs.getInt("CategoryID"));
             task.setPriorityID(rs.getInt("PriorityID"));
-            task.setDate(rs.getDate("Date").toLocalDate()); // Convert java.sql.Date to LocalDate
+            task.setDate(rs.getDate("Date")); // Directly set java.sql.Date
             task.setStatus(rs.getBoolean("Status"));
 
             return task;
