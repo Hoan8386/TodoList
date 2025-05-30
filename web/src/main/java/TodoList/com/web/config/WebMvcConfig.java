@@ -1,6 +1,7 @@
 package TodoList.com.web.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -12,6 +13,7 @@ import org.springframework.web.servlet.view.JstlView;
 
 @Configuration
 @EnableWebMvc
+@ComponentScan(basePackages = "TodoList.com.web")
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Bean
