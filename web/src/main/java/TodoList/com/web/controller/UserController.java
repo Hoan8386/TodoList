@@ -6,8 +6,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import TodoList.com.web.model.Category;
+import TodoList.com.web.model.DTOLogin;
 import TodoList.com.web.model.Priority;
 import TodoList.com.web.model.Task;
 import TodoList.com.web.model.TaskCategoryPriorityDTO;
@@ -224,28 +226,42 @@ public class UserController {
         return "client/home/info";
     }
 
-    @RequestMapping("/login")
-    public String LoginPage(Model model) {
-        model.addAttribute("user", new Users());
-
-        return "client/auth/login";
+    @GetMapping("/login")
+    public String loginPage(Model model) {
+        model.addAttribute("user", new DTOLogin()); // Sử dụng DTOLogin thay vì Users
+        return "client/auth/login"; // Trả về view chính xác
     }
 
-    @RequestMapping(value = "user/login", method = RequestMethod.POST)
-    public String Login(@Valid @ModelAttribute("user") Users user,
-            BindingResult result, HttpSession session) {
-
-        if (this.userService.checkEmail(user.getEmail()) == true) {
-            Users checkUser = this.userService.getUserByEmail(user.getEmail());
-            String checkPassword = checkUser.getPasswordHash();
-            if (userService.checkPassword(user.getPasswordHash(), checkPassword) == true) {
-                session.setAttribute("currentUser", checkUser);
-                return "redirect:/";
-            } else {
-                return "redirect:/login";
-            }
+    @PostMapping("/login")
+    public String login(@Valid @ModelAttribute("user") DTOLogin dtoLogin, BindingResult result, HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        // Kiểm tra lỗi validation từ @Valid (ví dụ: email hoặc mật khẩu trống)
+        if (result.hasErrors()) {
+            return "client/auth/login"; // Trả về cùng view với GET để hiển thị lỗi validation
         }
-        return "redirect:/login";
+
+        // Kiểm tra email tồn tại
+        if (this.userService.checkEmail(dtoLogin.getEmail())) {
+            Users checkUser = this.userService.getUserByEmail(dtoLogin.getEmail());
+            String checkPassword = checkUser.getPasswordHash();
+            // Kiểm tra mật khẩu
+            if (userService.checkPassword(dtoLogin.getPasswordHash(), checkPassword)) {
+                session.setAttribute("currentUser", checkUser);
+                return "redirect:/"; // Đăng nhập thành công, chuyển hướng về trang chính
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Thông tin đăng nhập không chính xác");
+                return "redirect:/login"; // Mật khẩu sai
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "email không tồn tại");
+            return "redirect:/login"; // Email không tồn tại
+        }
+    }
+
+    @PostMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // Xóa session
+        return "redirect:/login"; // Chuyển hướng về trang đăng nhập
     }
 
     // tạo một đối tượng newUser để truyền qua view và bên view sẽ có
