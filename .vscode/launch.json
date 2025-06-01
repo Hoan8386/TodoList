@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-WebApplication<TodoList>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "TodoList.com.web.WebApplication",
+            "projectName": "TodoList",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
