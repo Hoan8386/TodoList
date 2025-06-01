@@ -100,12 +100,6 @@
                                                 ? 'selected' : '' }>${pri.name}</option>
                                         </c:forEach>
                                     </select>
-
-                                    <!-- 🗓️ Input chọn ngày, mặc định là ngày hôm nay -->
-                                    <!-- <input type="date" class="form-control" name="date"
-                                        value="${param.date != null ? param.date : java.time.LocalDate.now()}"
-                                        style="max-width: 180px;"> -->
-
                                     <button type="submit" class="btn btn-outline-primary">
                                         <i class="fas fa-filter"></i> Filter
                                     </button>
@@ -142,24 +136,27 @@
 
                             <div class="task-actions"
                                 style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-                                <!-- Icon xem chi tiết -->
+                                <!-- View Details Icon -->
                                 <a href="javascript:void(0);" class="task-view-details"
-                                    onclick="showTaskDetail('${task.taskID}','${task.name}', '${task.description}', '${task.date}', '${task.categoryID}', '${task.categoryColor}', '${task.priorityID}')">
-
+                                    onclick="showTaskDetail('${task.taskID}', '${task.name}', '${task.description}', '${task.date}', '${task.categoryID}', '${task.categoryColor}', '${task.priorityID}')">
                                     <i class="fas fa-eye" style="color: #F1600D;"></i>
                                 </a>
 
-                                <!-- Nút xóa -->
+                                <!-- Edit Icon -->
+                                <a href="javascript:void(0);" class="task-edit"
+                                    onclick="showEditTask('${task.taskID}', '${task.name}', '${task.description}', '${task.date}', '${task.categoryID}', '${task.priorityID}')">
+                                    <i class="fas fa-edit" style="color: #F1600D;"></i>
+                                </a>
+
+                                <!-- Delete Icon -->
                                 <form action="/deleteTask" method="post" style="display: inline;">
                                     <input type="hidden" name="taskId" value="${task.taskID}" />
                                     <button type="button" style="border: none; background: none; padding: 0;"
                                         onclick="confirmDelete(${task.taskID})">
                                         <i class="fas fa-trash" style="color: #dc3545;"></i>
                                     </button>
-
                                 </form>
                             </div>
-
                         </div>
                         </c:forEach>
                         </c:if>
@@ -209,19 +206,17 @@
                                         </div>
                                         <div class="mb-3">
                                             <strong class="text-muted">Category:</strong>
-                                            <select id="modalTaskCategory" class="form-select">
+                                            <select id="modalTaskCategory" class="form-select" disabled>
                                                 <c:forEach var="category" items="${categories}">
                                                     <option value="${category.categoryID}" style="color: black;">
                                                         ${category.name}
                                                     </option>
                                                 </c:forEach>
                                             </select>
-
-
                                         </div>
                                         <div class="mb-3">
                                             <strong class="text-muted">Priority:</strong>
-                                            <select id="modalTaskPriority" class="form-select">
+                                            <select id="modalTaskPriority" class="form-select" disabled>
                                                 <option value="1">Low Priority</option>
                                                 <option value="2">Normal Priority</option>
                                                 <option value="3">High Priority</option>
@@ -229,21 +224,85 @@
                                             </select>
                                         </div>
                                     </div>
-
                                     <!-- Modal Footer -->
                                     <div class="modal-footer bg-light rounded-bottom-4">
-                                        <button type="button" class="btn btn-warning" id="editBtn"
-                                            onclick="enableEditing()">
-                                            <i class="fas fa-edit me-1"></i>Edit
-                                        </button>
-
-
-
-
                                         <button type="button" class="btn"
                                             style="border: 1px solid #F1600D; color: #F1600D;" data-bs-dismiss="modal">
                                             <i class="fas fa-times-circle me-1"></i>Close
                                         </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Edit Task Modal -->
+                        <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content shadow-lg border-0 rounded-4">
+                                    <!-- Modal Header -->
+                                    <div class="modal-header"
+                                        style="background-color: #F1600D; color: #fff; border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
+                                        <h5 class="modal-title" id="editTaskLabel">
+                                            <i class="fas fa-edit me-2"></i>Edit Task
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <!-- Modal Body -->
+                                    <div class="modal-body px-4">
+                                        <form id="editTaskForm" action="/updateTask" method="post">
+                                            <div class="mb-3" hidden>
+                                                <input type="text" id="editTaskID" name="taskID"
+                                                    class="form-control fw-semibold text-dark">
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong class="text-muted">Name:</strong>
+                                                <input type="text" id="editTaskName" name="name"
+                                                    class="form-control fw-semibold text-dark" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong class="text-muted">Description:</strong>
+                                                <textarea id="editTaskDescription" name="description"
+                                                    class="form-control text-muted fst-italic"></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong class="text-muted">Date:</strong>
+                                                <input type="date" id="editTaskDate" name="date"
+                                                    class="form-control text-dark" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong class="text-muted">Category:</strong>
+                                                <select id="editTaskCategory" name="categoryID" class="form-select"
+                                                    required>
+                                                    <c:forEach var="category" items="${categories}">
+                                                        <option value="${category.categoryID}" style="color: black;">
+                                                            ${category.name}
+                                                        </option>
+                                                    </c:forEach>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong class="text-muted">Priority:</strong>
+                                                <select id="editTaskPriority" name="priorityID" class="form-select"
+                                                    required>
+                                                    <option value="1">Low Priority</option>
+                                                    <option value="2">Normal Priority</option>
+                                                    <option value="3">High Priority</option>
+                                                    <option value="4">Urgent</option>
+                                                </select>
+                                            </div>
+                                            <div class="modal-footer bg-light rounded-bottom-4">
+                                                <button type="button" class="btn"
+                                                    style="border: 1px solid #F1600D; color: #F1600D;"
+                                                    data-bs-dismiss="modal">
+                                                    <i class="fas fa-times-circle me-1"></i>Close
+                                                </button>
+                                                <button type="submit" class="btn btn-success">
+                                                    <i class="fas fa-check me-1"></i>Update
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -284,73 +343,31 @@
                                 document.getElementById("modalTaskDescription").value = description;
                                 document.getElementById("modalTaskDate").value = date;
                                 document.getElementById("modalTaskID").value = taskID;
-
-
-                                const categoryElement = document.getElementById("modalTaskCategory");
-                                categoryElement.value = categoryID; // chọn đúng option
-                                categoryElement.style.color = 'black';
-
+                                document.getElementById("modalTaskCategory").value = categoryID;
+                                document.getElementById("modalTaskCategory").style.color = 'black';
                                 document.getElementById("modalTaskPriority").value = priorityID;
 
                                 const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
                                 modal.show();
                             }
 
+                            function showEditTask(taskID, name, description, date, categoryID, priorityID) {
+                                document.getElementById("editTaskID").value = taskID;
+                                document.getElementById("editTaskName").value = name;
+                                document.getElementById("editTaskDescription").value = description;
+                                document.getElementById("editTaskDate").value = date;
+                                document.getElementById("editTaskCategory").value = categoryID;
+                                document.getElementById("editTaskPriority").value = priorityID;
+
+                                const modal = new bootstrap.Modal(document.getElementById('editTaskModal'));
+                                modal.show();
+                            }
 
                             function confirmDelete(taskId) {
                                 document.getElementById("deleteTaskId").value = taskId;
                                 var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
                                 deleteModal.show();
                             }
-
-                            function enableEditing() {
-                                // Bật tất cả input/select
-                                document.getElementById("modalTaskName").disabled = false;
-                                document.getElementById("modalTaskDescription").disabled = false;
-                                document.getElementById("modalTaskDate").disabled = false;
-                                document.getElementById("modalTaskCategory").disabled = false;
-                                document.getElementById("modalTaskPriority").disabled = false;
-
-                                // Chuyển nút Edit thành Update
-                                const editBtn = document.getElementById("editBtn");
-                                editBtn.innerHTML = '<i class="fas fa-check me-1"></i>Update';
-                                editBtn.classList.remove('btn-warning');
-                                editBtn.classList.add('btn-success');
-                                editBtn.setAttribute('onclick', 'submitUpdate()');
-                            }
-
-                            function submitUpdate() {
-                                const updatedTask = {
-                                    taskID: document.getElementById("modalTaskID").value,
-                                    name: document.getElementById("modalTaskName").value,
-                                    description: document.getElementById("modalTaskDescription").value,
-                                    date: document.getElementById("modalTaskDate").value,
-                                    categoryID: document.getElementById("modalTaskCategory").value,
-                                    priorityID: document.getElementById("modalTaskPriority").value
-                                };
-
-                                console.log("Updated Task: ", updatedTask);
-                                fetch('/updateTask', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify(updatedTask)
-                                })
-                                    .then(response => {
-                                        if (response.ok) {
-                                            alert('Cập nhật thành công!');
-                                            location.reload(); // Refresh lại trang để thấy task mới
-                                        } else {
-                                            alert('Cập nhật thất bại.');
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Lỗi khi cập nhật:', error);
-                                    });
-                            }
-
-
                         </script>
                     </body>
 

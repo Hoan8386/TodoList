@@ -58,7 +58,7 @@ public class AddTaskController {
     }
 
     @PostMapping("/updateTask")
-    public boolean updateTask(@RequestBody Task task, HttpSession session) {
+    public String updateTask(@ModelAttribute Task task, HttpSession session) {
         Users currentUser = (Users) session.getAttribute("currentUser");
         Task existingTask = taskService.getTaskById(task.getTaskID());
 
@@ -68,10 +68,12 @@ public class AddTaskController {
             existingTask.setDate(task.getDate());
             existingTask.setCategoryID(task.getCategoryID());
             existingTask.setPriorityID(task.getPriorityID());
-            return taskService.updateTask(existingTask);
+            boolean updated = taskService.updateTask(existingTask);
+            if (updated) {
+                return "redirect:/today"; // Redirect to the main page on success
+            }
         }
-
-        return false;
+        return "redirect:/?error=updateFailed"; // Redirect with error on failure
     }
 
 }
